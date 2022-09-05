@@ -1,0 +1,20 @@
+.App {
+  text-align: center;
+  line-height: 0%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-weight: bold;
+  font-family:Verdana, Geneva, Tahoma, sans-serif;
+}
+
+#list {
+  margin: auto;
+}
+
+.flex {
+  display: flex;
+  justify-content: left;
+  align-items: center;
+  flex-direction: row;
+}
