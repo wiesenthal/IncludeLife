@@ -46,7 +46,7 @@ async function get_inclusions() {
     
     let inclusionObjects = [];
 
-    alpha = 0.8;
+    alpha = 0.65;
 
     total = 0;
     zipfs = [];
