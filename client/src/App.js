@@ -23,13 +23,16 @@ function Item(props) {
     setChecked(!checked);
   }
   return <div class="flex">
-      <input type="checkbox" checked={checked} onChange={check}/><p>{props.text}</p>
+      <input type="checkbox" checked={checked} onChange={check}/>
+      <span style={{fontWeight: "bold"}}>{props.text}</span>
+      {props.show_count? <span style={{color: "grey"}}>: {props.done_count}</span> : null}
     </div>
 }
 
 function App() {
   const [data, setData] = React.useState(null);
   const [updateCount, setUpdateCount] = React.useState(0);
+  const [showCount, setShowCount] = React.useState(false);
 
   function getTotalDoneCount() {
     return data.reduce((total, inclusion) => total + inclusion.done_count, 0);
@@ -61,9 +64,12 @@ function App() {
           <Item 
           key={inclusion}
           text={inclusion}
+          done_count={data.find(inclusionObj => inclusionObj.name === inclusion).done_count}
+          show_count = {showCount}
           update={() => setUpdateCount(updateCount + 1)}/>
         )}
       </div>
+      <button onClick={() => setShowCount(!showCount)}>Toggle Count Visibility</button>
     </div>
   );
 }
