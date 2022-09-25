@@ -24,6 +24,11 @@ const frequencies = JSON.parse(fs.readFileSync(
     "utf8"
 ));
 
+async function has_user(user) {
+    let result = await inclusion_collection.findOne({"_user":user});
+    return result != null;
+}
+
 async function load_inclusions(user) {
     let inclusions = await inclusion_collection.findOne({"_user":user}).then((result) => {
         return result.sorted_inclusions;
@@ -32,6 +37,9 @@ async function load_inclusions(user) {
 }
 async function load_frequencies(user) {
     let frequencies = await frequencies_collection.findOne({"_user":user}).then((result) => {
+        if (result == null) {
+            return {};
+        }
         delete result._id;
         delete result._user;
         return result;
@@ -39,7 +47,14 @@ async function load_frequencies(user) {
     return frequencies;
 }
 
+async function set_inclusions(user, inclusions) {
+    inclusion_collection.updateOne({"_user":user}, {$set: {"sorted_inclusions": inclusions}}, {upsert: true});
+}
+
 async function get_inclusions(user) {
+    if (!await has_user(user)) {
+        return null;
+    }
     let inclusions = await load_inclusions(user);
     let frequencies = await load_frequencies(user);
     
@@ -75,10 +90,10 @@ async function increment_frequency(user, inclusion) {
     } else {
         frequencies[inclusion] = 1;
     }
-    frequencies_collection.updateOne({"_user":user}, {$set: frequencies});
+    frequencies_collection.updateOne({"_user":user}, {$set: frequencies}, {upsert: true});
 
 }
 
 
 
-module.exports = { get_inclusions, increment_frequency };
+module.exports = { get_inclusions, increment_frequency, set_inclusions };

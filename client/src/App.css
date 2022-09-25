@@ -7,6 +7,12 @@
   font-family:Verdana, Geneva, Tahoma, sans-serif;
 }
 
+iframe {
+  width: 100%;
+  height: 100vw;
+  border: none;
+}
+
 #list {
   margin: auto;
 }

@@ -15,6 +15,12 @@ app.use(express.static(path.resolve(__dirname, "../client/build")));
 app.use(bp.json());
 app.use(bp.urlencoded({ extended: true }));
 
+app.get("/is_logged_in", (req, res) => {
+    user = req.query.user;
+    dataprep.has_user(user).then((result) => {
+        res.json({"logged_in": result});
+    });
+});
 
 app.get("/get-data", (req, res) => {
     user = req.query.user;
@@ -27,13 +33,23 @@ app.get("/get-client-id", (req, res) => {
     res.json({"client_id": process.env.CLIENTID})
 });
 
+app.post("/set-data", (req, res) => {
+    body = req.body;
+    inclusions = body.inclusions;
+    user = body.user;
+    dataprep.set_inclusions(user, inclusions).then(() => {
+        res.json({"success": true});
+    });
+});
+
 app.post("/inclusion-done", (req, res) => {
     body = req.body;
     inclusion = body.inclusion_name;
     user = body.user;
     console.log("inclusion done", inclusion);
-    dataprep.increment_frequency(user, inclusion);
-    res.json({"success": true});
+    dataprep.increment_frequency(user, inclusion).then(() => {
+        res.json({"success": true});
+    });
 });
 
 app.get('*', (req, res) => {

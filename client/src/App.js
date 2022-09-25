@@ -12,7 +12,6 @@ import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 function Item(props) {
   const [checked, setChecked] = React.useState(false);
   function check() {
-    console.log("checked", checked);
     if (!checked) {
       fetch("/inclusion-done", {
         method: "POST",
@@ -22,7 +21,7 @@ function Item(props) {
         body: JSON.stringify({inclusion_name: props.text, user: props.user})
       }).then(() => {
         props.update();
-        setTimeout(() => {setChecked(false)}, 1000);
+        setTimeout(() => setChecked(false), 500);
       });
     }
     setChecked(!checked);
@@ -39,6 +38,7 @@ function App() {
   const [updateCount, setUpdateCount] = React.useState(0);
   const [showCount, setShowCount] = React.useState(false);
   const [user, setUser] = React.useState(getWindowEmail());
+  const [clientId, setClientId] = React.useState(null);
 
   function getWindowEmail() {
     return window.localStorage.getItem('user');
@@ -61,9 +61,7 @@ function App() {
     return d.map(inclusion => inclusion.name);
   }
   function signIn(credentialResponse) {
-    console.log(credentialResponse);
     let user = jwtDecode(credentialResponse.credential);
-    console.log(user.email);
     setWindowEmail(user.email);
   }
 
@@ -75,38 +73,66 @@ function App() {
             setData(data.inclusions)
           });
     }
-  }, [user]);
-  if (user && !data) {
+  }, [user, updateCount]);
+
+  React.useEffect(() => {
+    fetch("/get-client-id").then((res) => res.json()).then((data) => {
+      setClientId(data.client_id);
+    });
+    window.addEventListener('message', (event) => {
+      fetch('/set-data', {
+          method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({inclusions: event.data, user: user})
+      }).then(() => {
+        setUpdateCount(updateCount + 1);
+      });
+
+    });
+  }, []);
+
+  if (!clientId) {
     return <div>Loading...</div>;
   }
-
-  return (
-    <GoogleOAuthProvider
-    clientId={"372222793571-7dvefc1ekrb83a4eifl7r222uqh4va5m.apps.googleusercontent.com"}
-    >
-    <div className="App">
-    {user ? null : <GoogleLogin
+  if (!user) {
+    return (
+      <GoogleOAuthProvider
+      clientId={clientId}
+      >
+        <GoogleLogin
           onSuccess={signIn}
           onError={error => console.log(error)}
           useOneTap
           auto_select
-      />}
-      {!user ? null :
-      <div>
-      <div id="list">
-        {getOrder().map(inclusion => 
-          <Item 
-          key={inclusion}
-          text={inclusion}
-          done_count={data.find(inclusionObj => inclusionObj.name === inclusion).done_count}
-          show_count = {showCount}
-          update={() => setUpdateCount(updateCount + 1)}
-          user={user}/>
-        )}
-      </div>
-      <button onClick={() => setShowCount(!showCount)}>Toggle Count Visibility</button>
-      </div>
-      }
+        />
+      </GoogleOAuthProvider>)
+    }
+  
+  return (
+    <GoogleOAuthProvider
+    clientId={clientId}
+    >
+    <div className="App">
+    {data ? 
+    <div>
+    <div id="list">
+      {getOrder().map(inclusion => 
+        <Item 
+        key={inclusion}
+        text={inclusion}
+        done_count={data.find(inclusionObj => inclusionObj.name === inclusion).done_count}
+        show_count = {showCount}
+        update={() => setUpdateCount(updateCount + 1)}
+        user={user}/>
+      )}
+    </div>
+    <button onClick={() => setShowCount(!showCount)}>Toggle Count Visibility</button>
+    </div> 
+    :
+    <iframe src='./subjectiveSort/index.html' />
+    }
     </div>
     </GoogleOAuthProvider>
   );
