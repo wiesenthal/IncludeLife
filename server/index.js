@@ -4,7 +4,7 @@ const express = require("express");
 const bp = require("body-parser");
 const path = require("path");
 const dataprep = require("./dataprep.js");
-const sslRedirect = require(‘heroku-ssl-redirect’);
+const sslRedirect = require("heroku-ssl-redirect");
 require('env2')('config.env');
 
 const PORT = process.env.PORT || 3001;
