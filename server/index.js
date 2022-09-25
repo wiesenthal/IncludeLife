@@ -4,7 +4,6 @@ const express = require("express");
 const bp = require("body-parser");
 const path = require("path");
 const dataprep = require("./dataprep.js");
-const sslRedirect = require("heroku-ssl-redirect");
 require('env2')('config.env');
 
 const PORT = process.env.PORT || 3001;
@@ -12,7 +11,6 @@ const PORT = process.env.PORT || 3001;
 const app = express();
 
 app.use(express.static(path.resolve(__dirname, "../client/build")));
-app.use(sslRedirect());
 
 app.use(bp.json());
 app.use(bp.urlencoded({ extended: true }));
