@@ -4,6 +4,11 @@ import React from "react";
 import logo from "./logo.svg";
 import "./App.css";
 
+import jwtDecode from 'jwt-decode';
+
+// import { googleAuthenticator } from './auth.js';
+import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
+
 function Item(props) {
   const [checked, setChecked] = React.useState(false);
   function check() {
@@ -14,7 +19,7 @@ function Item(props) {
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({inclusion_name: props.text})
+        body: JSON.stringify({inclusion_name: props.text, user: props.user})
       }).then(() => {
         props.update();
         setTimeout(() => {setChecked(false)}, 1000);
@@ -33,6 +38,16 @@ function App() {
   const [data, setData] = React.useState(null);
   const [updateCount, setUpdateCount] = React.useState(0);
   const [showCount, setShowCount] = React.useState(false);
+  const [user, setUser] = React.useState(getWindowEmail());
+
+  function getWindowEmail() {
+    return window.localStorage.getItem('user');
+  }
+  
+  function setWindowEmail(email) {
+    window.localStorage.setItem('user', email);
+    setUser(email);
+  }
 
   function getTotalDoneCount() {
     return data.reduce((total, inclusion) => total + inclusion.done_count, 0);
@@ -45,20 +60,39 @@ function App() {
     let d = [...data].sort((a, b) => calcProportionDifference(a) - calcProportionDifference(b));
     return d.map(inclusion => inclusion.name);
   }
+  function signIn(credentialResponse) {
+    console.log(credentialResponse);
+    let user = jwtDecode(credentialResponse.credential);
+    console.log(user.email);
+    setWindowEmail(user.email);
+  }
+
   React.useEffect(() => {
-    fetch("/get-data")
-        .then((res) => res.json())
-        .then((data) => {
-          setData(data.inclusions)
-        });
-  }, [updateCount]);
-  if (!data) {
+    if (user) {
+      fetch(`/get-data?user=${user}`)
+          .then((res) => res.json())
+          .then((data) => {
+            setData(data.inclusions)
+          });
+    }
+  }, [user]);
+  if (user && !data) {
     return <div>Loading...</div>;
   }
-  console.log(data);
 
   return (
+    <GoogleOAuthProvider
+    clientId={"372222793571-7dvefc1ekrb83a4eifl7r222uqh4va5m.apps.googleusercontent.com"}
+    >
     <div className="App">
+    {user ? null : <GoogleLogin
+          onSuccess={signIn}
+          onError={error => console.log(error)}
+          useOneTap
+          auto_select
+      />}
+      {!user ? null :
+      <div>
       <div id="list">
         {getOrder().map(inclusion => 
           <Item 
@@ -66,11 +100,15 @@ function App() {
           text={inclusion}
           done_count={data.find(inclusionObj => inclusionObj.name === inclusion).done_count}
           show_count = {showCount}
-          update={() => setUpdateCount(updateCount + 1)}/>
+          update={() => setUpdateCount(updateCount + 1)}
+          user={user}/>
         )}
       </div>
       <button onClick={() => setShowCount(!showCount)}>Toggle Count Visibility</button>
+      </div>
+      }
     </div>
+    </GoogleOAuthProvider>
   );
 }
 

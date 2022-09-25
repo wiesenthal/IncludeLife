@@ -4,6 +4,7 @@ const express = require("express");
 const bp = require("body-parser");
 const path = require("path");
 const dataprep = require("./dataprep.js");
+require('env2')('config.env');
 
 const PORT = process.env.PORT || 3001;
 
@@ -16,19 +17,22 @@ app.use(bp.urlencoded({ extended: true }));
 
 
 app.get("/get-data", (req, res) => {
-    dataprep.get_inclusions().then((result) => {
+    user = req.query.user;
+    dataprep.get_inclusions(user).then((result) => {
         res.json({"inclusions": result});
     });
 });
 
+app.get("/get-client-id", (req, res) => {
+    res.json({"client_id": process.env.CLIENTID})
+});
+
 app.post("/inclusion-done", (req, res) => {
-    inclusion = req.body.inclusion_name;
+    body = req.body;
+    inclusion = body.inclusion_name;
+    user = body.user;
     console.log("inclusion done", inclusion);
-    dataprep.increment_frequency(inclusion);
-    /*
-    inclusionObjects.find(inclusionObject => inclusionObject.name === inclusion).done_count += 1;
-    dataprep.save_frequencies(inclusionObjects);
-    */
+    dataprep.increment_frequency(user, inclusion);
     res.json({"success": true});
 });
 

@@ -1,8 +1,7 @@
 const fs = require("fs");
 const path = require("path");
-
 const { MongoClient } = require("mongodb");
-require('env2')('config.env')
+require('env2')('config.env');
 const DB_URL = process.env.MONGODB_URI;
 
 const client = new MongoClient(DB_URL, { useNewUrlParser: true, useUnifiedTopology: true });
@@ -14,11 +13,11 @@ client.connect(err => {
         console.log("Connected to database");
     }
 });
+
 // get database
 const db = client.db("life");
 const inclusion_collection = db.collection("inclusions");
 const frequencies_collection = db.collection("frequencies");
-USER = "miles";
 
 const frequencies = JSON.parse(fs.readFileSync(
     path.resolve(__dirname, "frequencies.txt"),
@@ -40,9 +39,9 @@ async function load_frequencies(user) {
     return frequencies;
 }
 
-async function get_inclusions() {
-    let inclusions = await load_inclusions(USER);
-    let frequencies = await load_frequencies(USER);
+async function get_inclusions(user) {
+    let inclusions = await load_inclusions(user);
+    let frequencies = await load_frequencies(user);
     
     let inclusionObjects = [];
 
@@ -69,14 +68,14 @@ async function get_inclusions() {
     return inclusionObjects;
 }
 
-async function increment_frequency(inclusion) {
-    let frequencies = await load_frequencies(USER);
+async function increment_frequency(user, inclusion) {
+    let frequencies = await load_frequencies(user);
     if (inclusion in frequencies) {
         frequencies[inclusion] += 1;
     } else {
         frequencies[inclusion] = 1;
     }
-    frequencies_collection.updateOne({"_user":USER}, {$set: frequencies});
+    frequencies_collection.updateOne({"_user":user}, {$set: frequencies});
 
 }
 
