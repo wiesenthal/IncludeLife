@@ -12,14 +12,10 @@ const app = express();
 
 app.use(express.static(path.resolve(__dirname, "../client/build")));
 app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', '*');
-    next();
-  });
-app.use((req, res, next) => {
-    if (req.header('x-forwarded-proto') !== 'https')
-      res.redirect(`https://${req.header('host')}${req.url}`)
+    if (req.hostname !== "localhost" && req.header('x-forwarded-proto') !== 'https')
+      res.redirect(`https://${req.header('host')}${req.url}`);
     else
-      next()
+      next();
 });
 
 app.use(bp.json());
@@ -38,7 +34,6 @@ app.get("/get-data", (req, res) => {
         res.json({"inclusions": result});
     });
 });
-
 app.get("/get-client-id", (req, res) => {
     res.json({"client_id": process.env.CLIENTID})
 });

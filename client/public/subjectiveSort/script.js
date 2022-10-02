@@ -247,7 +247,20 @@ async function mergeInsertionSort(list)
     return S;
 }
 
+function getParams() {
+    var params = location.href.split('?')[1].split('&');
+    var paramsDict = {};
+    for (i in params) {
+        param = params[i].split('=');
+        paramsDict[param[0]] = param[1];
+    }
+    return paramsDict;
+}
+
 async function main() {
+    var params = getParams();
+    var user = params['user'];
+    
     $("#resultsBox").hide();
     $("#downloadResults").hide();
     $("#button1").hide();
@@ -287,9 +300,18 @@ async function main() {
     $("#downloadResults").show();
     console.log(`You made ${numComparisons} total comparisons.`);
 
-    url = document.referrer;
-    console.log(url);
-    window.parent.postMessage(sortedList, url);
+    fetch('/set-data', {    
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({inclusions: sortedList, user: user}),
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Success:', data['success']);
+    });
+    ;
 }
 
 $(document).ready(main);

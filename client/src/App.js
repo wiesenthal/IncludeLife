@@ -67,29 +67,38 @@ function App() {
 
   React.useEffect(() => {
     if (user) {
+      let checkDataInterval = setInterval(() => {
+        console.log("checking for data");
+        if (user) {
+          console.log("no data, but user, fetching data");
+          fetch(`/get-data?user=${user}`)
+              .then((res) => res.json())
+              .then((data) => {
+                if (data && data.inclusions) {
+                  console.log("data found.");
+                  setData(data.inclusions);
+                  clearInterval(checkDataInterval);
+                }
+              });
+        }
+      }, 1000);
       fetch(`/get-data?user=${user}`)
-          .then((res) => res.json())
-          .then((data) => {
-            setData(data.inclusions)
-          });
+              .then((res) => res.json())
+              .then((data) => {
+                if (data && data.inclusions) {
+                  console.log("data found.");
+                  setData(data.inclusions);
+                  clearInterval(checkDataInterval);
+                }
+              });
     }
   }, [user, updateCount]);
 
   React.useEffect(() => {
-    fetch("/get-client-id").then((res) => res.json()).then((data) => {
-      setClientId(data.client_id);
-    });
-    window.addEventListener('message', (event) => {
-      fetch('/set-data', {
-          method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({inclusions: event.data, user: user})
-      }).then(() => {
-        setUpdateCount(updateCount + 1);
-      });
-
+    fetch("/get-client-id")
+      .then((res) => res.json())
+      .then((data) => {
+        setClientId(data.client_id);
     });
   }, []);
 
@@ -131,7 +140,7 @@ function App() {
     <button onClick={() => setShowCount(!showCount)}>Toggle Count Visibility</button>
     </div> 
     :
-    <iframe src='./subjectiveSort/index.html' />
+    <iframe src={`./subjectiveSort/index.html?user=${user}`} />
     }
     </div>
     </GoogleOAuthProvider>
