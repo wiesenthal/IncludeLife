@@ -68,14 +68,11 @@ function App() {
   React.useEffect(() => {
     if (user) {
       let checkDataInterval = setInterval(() => {
-        console.log("checking for data");
         if (user) {
-          console.log("no data, but user, fetching data");
           fetch(`/get-data?user=${user}`)
               .then((res) => res.json())
               .then((data) => {
                 if (data && data.inclusions) {
-                  console.log("data found.");
                   setData(data.inclusions);
                   clearInterval(checkDataInterval);
                 }
@@ -86,7 +83,6 @@ function App() {
               .then((res) => res.json())
               .then((data) => {
                 if (data && data.inclusions) {
-                  console.log("data found.");
                   setData(data.inclusions);
                   clearInterval(checkDataInterval);
                 }
@@ -140,7 +136,10 @@ function App() {
     <button onClick={() => setShowCount(!showCount)}>Toggle Count Visibility</button>
     </div> 
     :
-    <iframe src={`./subjectiveSort/index.html?user=${user}`} />
+    <div>
+      <h1 style={{color: "green"}}>Use the below tool to sort a list of activities you value in your life.</h1>
+      <iframe src={`./subjectiveSort/index.html?user=${user}`} />
+    </div>
     }
     </div>
     </GoogleOAuthProvider>

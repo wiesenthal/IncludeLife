@@ -60,7 +60,7 @@ async function get_inclusions(user) {
     
     let inclusionObjects = [];
 
-    alpha = 0.65;
+    alpha = 1;
 
     total = 0;
     zipfs = [];
