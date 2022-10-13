@@ -30,7 +30,8 @@ app.get("/is_logged_in", (req, res) => {
 
 app.get("/get-data", (req, res) => {
     user = req.query.user;
-    dataprep.get_inclusions(user).then((result) => {
+    alpha = req.query.alpha;
+    dataprep.get_inclusions(user, alpha).then((result) => {
         res.json({"inclusions": result});
     });
 });

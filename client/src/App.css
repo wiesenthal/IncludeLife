@@ -7,6 +7,10 @@
   font-family:Verdana, Geneva, Tahoma, sans-serif;
 }
 
+div {
+  margin: auto;
+}
+
 iframe {
   width: 100%;
   height: 100vw;

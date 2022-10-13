@@ -1,6 +1,7 @@
 // client/src/App.js
 
 import React from "react";
+import Slider from "react-input-slider";
 import logo from "./logo.svg";
 import "./App.css";
 
@@ -39,6 +40,7 @@ function App() {
   const [showCount, setShowCount] = React.useState(false);
   const [user, setUser] = React.useState(getWindowEmail());
   const [clientId, setClientId] = React.useState(null);
+  const [alpha, setAlpha] = React.useState(0.75);
 
   function getWindowEmail() {
     return window.localStorage.getItem('user');
@@ -69,7 +71,7 @@ function App() {
     if (user) {
       let checkDataInterval = setInterval(() => {
         if (user) {
-          fetch(`/get-data?user=${user}`)
+          fetch(`/get-data?user=${user}&alpha=${alpha}`)
               .then((res) => res.json())
               .then((data) => {
                 if (data && data.inclusions) {
@@ -79,7 +81,7 @@ function App() {
               });
         }
       }, 1000);
-      fetch(`/get-data?user=${user}`)
+      fetch(`/get-data?user=${user}&alpha=${alpha}`)
               .then((res) => res.json())
               .then((data) => {
                 if (data && data.inclusions) {
@@ -88,7 +90,7 @@ function App() {
                 }
               });
     }
-  }, [user, updateCount]);
+  }, [user, updateCount, alpha]);
 
   React.useEffect(() => {
     fetch("/get-client-id")
@@ -134,6 +136,8 @@ function App() {
       )}
     </div>
     <button onClick={() => setShowCount(!showCount)}>Toggle Count Visibility</button>
+    <p>Value disproportionality:</p>
+    <Slider axis="x" x={alpha} onChange={( {x} ) => setAlpha(x)} xmin={0.5} xmax={1.5} xstep={0.05}/>
     </div> 
     :
     <div>

@@ -51,7 +51,7 @@ async function set_inclusions(user, inclusions) {
     inclusion_collection.updateOne({"_user":user}, {$set: {"sorted_inclusions": inclusions}}, {upsert: true});
 }
 
-async function get_inclusions(user) {
+async function get_inclusions(user, alpha=0.9) {
     if (!await has_user(user)) {
         return null;
     }
@@ -59,8 +59,6 @@ async function get_inclusions(user) {
     let frequencies = await load_frequencies(user);
     
     let inclusionObjects = [];
-
-    alpha = 1;
 
     total = 0;
     zipfs = [];
